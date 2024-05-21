@@ -13,7 +13,7 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  List<Widget> lstview = [
+  final List<Widget> lstview = [
     Listviewitem(
       desciption: 'Iphone 11,64 gb, Yashil',
       id: 0,
@@ -58,7 +58,7 @@ class _HomepageState extends State<Homepage> {
     ),
   ];
 
-  List<Widget> griditem = [
+  final List<Widget> griditem = [
     Gridviewitem(
       desciption: 'Iphone 11,64 gb, Yashil',
       id: 0,
@@ -103,7 +103,7 @@ class _HomepageState extends State<Homepage> {
     ),
   ];
 
-  List<Widget> galleritem = [
+  final List<Widget> galleritem = [
     Galerywidgets(
       desciption: 'Iphone 11,64 gb, Yashil',
       id: 0,
@@ -147,21 +147,66 @@ class _HomepageState extends State<Homepage> {
       price: '1450000',
     ),
   ];
+
+  // For filtered items
+  List<Widget> filteredListViewItems = [];
+  List<Widget> filteredGridViewItems = [];
+  List<Widget> filteredGalleryItems = [];
 
   int choice = 1;
+
+  final formkey = GlobalKey<FormState>();
+  final searchcontroller = TextEditingController();
+
+  void searchchech() {
+    Map<String, int> describes = {
+      'Iphone 11,64 gb, Yashil': 0,
+      'Iphone 11 pro max,64 gb,qora': 1,
+      'Apple magic keyboard': 2,
+      'Macbook M1': 3,
+      'Magic mouse': 4,
+      'Apple watch 7': 5,
+      'Macbook zaryachik': 6,
+    };
+
+    List<int> idies = [];
+    List<String> smth = [];
+
+    describes.forEach((key, value) {
+      if (key.toLowerCase().contains(searchcontroller.text.toLowerCase())) {
+        smth.add(key);
+        idies.add(value);
+      }
+    });
+
+    print(idies);
+    print(smth);
+
+    filteredGalleryItems = idies.map((id) => galleritem[id]).toList();
+    filteredListViewItems = idies.map((id) => lstview[id]).toList();
+    filteredGridViewItems = idies.map((id) => griditem[id]).toList();
+
+    setState(() {});
+  }
 
   Widget choices() {
     switch (choice) {
       case 1:
         return Column(
-          children: galleritem,
+          children: filteredGalleryItems.isNotEmpty
+              ? filteredGalleryItems
+              : galleritem,
         );
       case 2:
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) => lstview[index],
-          itemCount: lstview.length,
+          itemBuilder: (context, index) => filteredListViewItems.isNotEmpty
+              ? filteredListViewItems[index]
+              : lstview[index],
+          itemCount: filteredListViewItems.isNotEmpty
+              ? filteredListViewItems.length
+              : lstview.length,
         );
       case 3:
         return GridView.builder(
@@ -172,8 +217,12 @@ class _HomepageState extends State<Homepage> {
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
           ),
-          itemBuilder: (context, index) => galleritem[index],
-          itemCount: griditem.length,
+          itemBuilder: (context, index) => filteredGridViewItems.isNotEmpty
+              ? filteredGridViewItems[index]
+              : griditem[index],
+          itemCount: filteredGridViewItems.isNotEmpty
+              ? filteredGridViewItems.length
+              : griditem.length,
         );
       default:
         return const SizedBox.shrink();
@@ -185,84 +234,99 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade500,
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text(
-                    'Мы нашли больше 1000 объявлений',
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(CupertinoIcons.arrow_up_arrow_down),
-                  ),
-                  PopupMenuButton<int>(
-                    position: PopupMenuPosition.under,
-                    color: Colors.grey.shade500,
-                    shadowColor: Colors.black,
-                    onSelected: (value) {
-                      setState(() {
-                        choice = value;
-                      });
-                    },
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: 1,
-                        child: Text('Галерея'),
-                      ),
-                      PopupMenuItem(
-                        value: 2,
-                        child: Text('Список'),
-                      ),
-                      PopupMenuItem(
-                        value: 3,
-                        child: Text('Плитка'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text('Реклама'),
-              Container(
-                padding: const EdgeInsets.all(20),
-                width: double.infinity,
-                height: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.white,
+        child: Form(
+          key: formkey,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: searchcontroller,
+                  decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            searchchech();
+                          },
+                          icon: const Icon(Icons.search)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20))),
                 ),
-                child: Row(
+                Row(
                   children: [
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/logo.jpg'),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
                     const Text(
-                      '@ayti_jobs',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      'Мы нашли больше 1000 объявлений',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(CupertinoIcons.arrow_up_arrow_down),
+                    ),
+                    PopupMenuButton<int>(
+                      position: PopupMenuPosition.under,
+                      color: Colors.grey.shade500,
+                      shadowColor: Colors.black,
+                      onSelected: (value) {
+                        setState(() {
+                          choice = value;
+                        });
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: 1,
+                          child: Text('Галерея'),
+                        ),
+                        PopupMenuItem(
+                          value: 2,
+                          child: Text('Список'),
+                        ),
+                        PopupMenuItem(
+                          value: 3,
+                          child: Text('Плитка'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              choices(),
-            ],
+                const SizedBox(height: 20),
+                const Text('Реклама'),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  width: double.infinity,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 70,
+                        height: 70,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/logo.jpg'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        '@ayti_jobs',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                choices(),
+              ],
+            ),
           ),
         ),
       ),
